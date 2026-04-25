@@ -1,0 +1,5 @@
+{
+  "name": "usagan-nail-spa",
+  "private": true,
+  "workspaces": ["frontend", "backend"]
+}
