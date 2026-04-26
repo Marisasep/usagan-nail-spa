@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { GalleryGrid } from '@/features/gallery/components/GalleryGrid';
+import { createFileRoute } from "@tanstack/react-router";
+import { GalleryGrid } from "@/features/gallery/components/GalleryGrid";
 
-export const Route = createFileRoute('/gallery')({
+export const Route = createFileRoute("/gallery")({
   component: GalleryPage,
 });
 

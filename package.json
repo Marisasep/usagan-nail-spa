@@ -1,5 +1,12 @@
 {
   "name": "usagan-nail-spa",
   "private": true,
-  "workspaces": ["frontend", "backend"]
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "msw",
+      "sharp",
+      "workerd"
+    ]
+  }
 }

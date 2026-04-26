@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { SHOP_INFO } from '@/shared/utils/constants';
@@ -57,9 +58,12 @@ export function Footer() {
 
         <Separator className="my-8" />
 
-        <p className="text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Usagan Nail Spa. All rights reserved.
-        </p>
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <p>&copy; {new Date().getFullYear()} Usagan Nail Spa. All rights reserved.</p>
+          <Link to="/admin" className="transition-colors hover:text-primary">
+            Admin
+          </Link>
+        </div>
       </div>
     </footer>
   );

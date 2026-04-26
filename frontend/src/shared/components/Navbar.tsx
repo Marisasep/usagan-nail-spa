@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Menu, X, Phone } from 'lucide-react';
+import { Phone, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 import { SHOP_INFO } from '@/shared/utils/constants';
 
 const navLinks = [
@@ -15,6 +15,22 @@ const navLinks = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (
+        menuRef.current?.contains(e.target as Node) ||
+        buttonRef.current?.contains(e.target as Node)
+      )
+        return;
+      setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -47,31 +63,87 @@ export function Navbar() {
           </Link>
         </div>
 
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-72">
-            <nav className="mt-8 flex flex-col gap-4">
-              {navLinks.map((link) => (
+        <div className="relative md:hidden">
+          <Button
+            ref={buttonRef}
+            variant="ghost"
+            size="icon"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line
+                x1="4" y1="6" x2="20" y2="6"
+                className={`origin-center transition-all duration-300 ease-in-out ${open ? 'translate-y-1.5 rotate-45' : ''}`}
+              />
+              <line
+                x1="4" y1="12" x2="20" y2="12"
+                className={`origin-center transition-all duration-300 ease-in-out ${open ? 'scale-x-0 opacity-0' : ''}`}
+              />
+              <line
+                x1="4" y1="18" x2="20" y2="18"
+                className={`origin-center transition-all duration-300 ease-in-out ${open ? '-translate-y-1.5 -rotate-45' : ''}`}
+              />
+            </svg>
+          </Button>
+
+          <div
+            ref={menuRef}
+            className={`absolute right-0 mt-3 w-64 origin-top-right rounded-xl border bg-popover p-1 shadow-lg transition-all duration-300 ease-out ${
+              open
+                ? 'scale-100 opacity-100 translate-y-0'
+                : 'pointer-events-none scale-95 opacity-0 -translate-y-2'
+            }`}
+          >
+            <nav className="flex flex-col gap-0.5 p-1">
+              {navLinks.map((link, i) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary"
-                  activeProps={{ className: 'text-lg font-medium text-primary' }}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+                  activeProps={{
+                    className:
+                      'rounded-lg px-3 py-2.5 text-sm font-medium bg-primary/10 text-primary',
+                  }}
                   onClick={() => setOpen(false)}
+                  style={{ animationDelay: `${i * 40}ms` }}
                 >
                   {link.label}
                 </Link>
               ))}
-              <Link to="/booking" onClick={() => setOpen(false)}>
-                <Button className="mt-4 w-full">จองคิวเลย</Button>
-              </Link>
             </nav>
-          </SheetContent>
-        </Sheet>
+
+            <div className="px-2 py-1">
+              <Separator />
+            </div>
+
+            <div className="p-2">
+              <Link to="/booking" onClick={() => setOpen(false)}>
+                <Button className="w-full" size="sm">
+                  จองคิวเลย
+                </Button>
+              </Link>
+            </div>
+
+            <div className="px-2 pb-1">
+              <Separator />
+            </div>
+
+            <div className="flex flex-col gap-1.5 px-4 py-2 text-xs text-muted-foreground">
+              <a href={`tel:${SHOP_INFO.phone}`} className="flex items-center gap-2 hover:text-primary">
+                <Phone className="h-3.5 w-3.5" />
+                {SHOP_INFO.phone}
+              </a>
+              <div className="flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5" />
+                {SHOP_INFO.openHours}
+              </div>
+              <a href={SHOP_INFO.mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                {SHOP_INFO.address}
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   );

@@ -1,45 +1,84 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { SERVICES, SHOP_INFO } from '@/shared/utils/constants';
-import { CalendarDays, CheckCircle } from 'lucide-react';
+} from "@/components/ui/select";
+import { SHOP_INFO } from "@/shared/utils/constants";
+import { useServices } from "@/shared/hooks/useServices";
+import { apiFetch } from "@/shared/utils/api";
+import { CalendarDays, CheckCircle, Loader2 } from "lucide-react";
 
 interface BookingFormProps {
   preselectedService?: string;
 }
 
 const timeSlots = [
-  '10:00', '10:30', '11:00', '11:30',
-  '12:00', '12:30', '13:00', '13:30',
-  '14:00', '14:30', '15:00', '15:30',
-  '16:00', '16:30', '17:00', '17:30',
-  '18:00', '18:30', '19:00',
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "12:00",
+  "12:30",
+  "13:00",
+  "13:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+  "17:00",
+  "17:30",
+  "18:00",
+  "18:30",
+  "19:00",
+  "20:00",
 ];
 
 export function BookingForm({ preselectedService }: BookingFormProps) {
+  const { data: services = [] } = useServices();
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    service: preselectedService ?? '',
-    date: '',
-    time: '',
-    note: '',
+    name: "",
+    phone: "",
+    service: preselectedService ?? "",
+    date: "",
+    time: "",
+    note: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError("");
+    setLoading(true);
+    try {
+      await apiFetch("/api/bookings", {
+        method: "POST",
+        body: JSON.stringify({
+          customerName: form.name,
+          customerPhone: form.phone,
+          serviceId: form.service,
+          date: form.date,
+          time: form.time,
+          note: form.note || undefined,
+        }),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -52,8 +91,11 @@ export function BookingForm({ preselectedService }: BookingFormProps) {
             เราจะติดต่อกลับเพื่อยืนยันการจองของคุณ
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            หรือติดต่อเราโดยตรงที่{' '}
-            <a href={`tel:${SHOP_INFO.phone}`} className="font-semibold text-primary">
+            หรือติดต่อเราโดยตรงที่{" "}
+            <a
+              href={`tel:${SHOP_INFO.phone}`}
+              className="font-semibold text-primary"
+            >
               {SHOP_INFO.phone}
             </a>
           </p>
@@ -100,14 +142,23 @@ export function BookingForm({ preselectedService }: BookingFormProps) {
 
           <div className="space-y-2">
             <Label>เลือกบริการ</Label>
-            <Select value={form.service} onValueChange={(v) => setForm({ ...form, service: v })}>
+            <Select
+              value={form.service}
+              onValueChange={(v) => setForm({ ...form, service: v ?? "" })}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="เลือกบริการที่ต้องการ" />
+                <SelectValue placeholder="เลือกบริการที่ต้องการ">
+                  {(value: string | null) => {
+                    if (!value) return 'เลือกบริการที่ต้องการ';
+                    const found = services.find((svc) => svc.id === value);
+                    return found ? `${found.name} — ฿${found.price.toLocaleString()}` : 'เลือกบริการที่ต้องการ';
+                  }}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent>
-                {SERVICES.map((s) => (
+              <SelectContent className="p-1">
+                {services.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {s.nameTh} — ฿{s.price.toLocaleString()}
+                    {s.name} — ฿{s.price.toLocaleString()}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -127,13 +178,18 @@ export function BookingForm({ preselectedService }: BookingFormProps) {
             </div>
             <div className="space-y-2">
               <Label>เวลา</Label>
-              <Select value={form.time} onValueChange={(v) => setForm({ ...form, time: v })}>
+              <Select
+                value={form.time}
+                onValueChange={(v) => setForm({ ...form, time: v ?? "" })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกเวลา" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="p-1">
                   {timeSlots.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -150,8 +206,21 @@ export function BookingForm({ preselectedService }: BookingFormProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full" size="lg">
-            จองคิวเลย
+          {error && (
+            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
+          <Button type="submit" className="w-full" size="lg" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                กำลังจอง...
+              </>
+            ) : (
+              'จองคิวเลย'
+            )}
           </Button>
         </form>
       </CardContent>

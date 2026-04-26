@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { SERVICES } from '@/shared/utils/constants';
+import { useServices } from '@/shared/hooks/useServices';
 import { ServiceCard } from './ServiceCard';
 import type { ServiceCategory } from '@/shared/types';
 
@@ -14,10 +14,15 @@ const categories = [
 
 export function ServiceList() {
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'all'>('all');
+  const { data: services = [], isLoading } = useServices();
 
   const filtered = activeCategory === 'all'
-    ? SERVICES
-    : SERVICES.filter((s) => s.category === activeCategory);
+    ? services
+    : services.filter((s) => s.category === activeCategory);
+
+  if (isLoading) {
+    return <p className="text-center text-muted-foreground">กำลังโหลด...</p>;
+  }
 
   return (
     <div>

@@ -19,13 +19,17 @@ const categoryLabel: Record<string, string> = {
 export function ServiceCard({ service }: ServiceCardProps) {
   return (
     <Card className="group flex flex-col transition-shadow hover:shadow-lg">
-      <div className="aspect-[4/3] overflow-hidden rounded-t-lg bg-muted">
-        <div className="flex h-full items-center justify-center text-5xl">
-          {service.category === 'nail' && '💅'}
-          {service.category === 'eyelash' && '👁️'}
-          {service.category === 'spa' && '🧖‍♀️'}
-          {service.category === 'package' && '✨'}
-        </div>
+      <div className="aspect-4/3 overflow-hidden rounded-t-lg bg-muted">
+        {service.image ? (
+          <img src={service.image} alt={service.name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-5xl">
+            {service.category === 'nail' && '💅'}
+            {service.category === 'eyelash' && '👁️'}
+            {service.category === 'spa' && '🧖‍♀️'}
+            {service.category === 'package' && '✨'}
+          </div>
+        )}
       </div>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -35,10 +39,10 @@ export function ServiceCard({ service }: ServiceCardProps) {
             {service.duration} นาที
           </span>
         </div>
-        <CardTitle className="text-lg">{service.nameTh}</CardTitle>
+        <CardTitle className="text-lg">{service.name}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col">
-        <p className="flex-1 text-sm text-muted-foreground">{service.descriptionTh}</p>
+        <p className="flex-1 text-sm text-muted-foreground">{service.description}</p>
         <div className="mt-4 flex items-center justify-between">
           <p className="text-2xl font-bold text-primary">฿{service.price.toLocaleString()}</p>
           <Link to="/booking" search={{ service: service.id }}>

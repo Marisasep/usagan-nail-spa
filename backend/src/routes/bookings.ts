@@ -33,7 +33,7 @@ bookingsRoute.post('/', async (c) => {
 bookingsRoute.get('/:id', async (c) => {
   const id = c.req.param('id');
   const result = await c.env.DB.prepare(
-    `SELECT b.*, s.name_th as service_name
+    `SELECT b.*, s.name as service_name
      FROM bookings b
      JOIN services s ON b.service_id = s.id
      WHERE b.id = ?`
